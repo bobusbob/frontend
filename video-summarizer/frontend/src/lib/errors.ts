@@ -33,3 +33,13 @@ const COPY: Record<AppErrorCode, Pick<AppError, "title" | "message">> = {
 export function errorOf(code: AppErrorCode): AppError {
   return { code, ...COPY[code] };
 }
+
+export class SummarizeError extends Error {
+  code: AppErrorCode;
+
+  constructor(code: AppErrorCode, message?: string) {
+    super(message ?? COPY[code].message);
+    this.name = "SummarizeError";
+    this.code = code;
+  }
+}

@@ -43,11 +43,19 @@ export interface Summary {
   youtubeId: string | null;
   youtubeUrl: string | null;
   readMinutes: number;
+  durationSeconds?: number | null;
   tldr: string[];
   chapters: SummaryChapter[];
   /** Пока нет бэкенда, карточка — пример структуры, а не анализ ролика. */
   demo: boolean;
 }
+
+export type SummarizeFailureCode = "invalid-url" | "no-speech" | "network";
+
+export type SummarizeEvent =
+  | { type: "step"; step: 0 | 1 | 2 }
+  | { type: "result"; summary: Summary }
+  | { type: "error"; code: SummarizeFailureCode; message: string };
 
 export interface SummaryRequest {
   mode: SourceMode;

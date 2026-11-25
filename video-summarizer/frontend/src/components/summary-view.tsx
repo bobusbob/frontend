@@ -112,6 +112,9 @@ export function SummaryView({
               {summary.source === "youtube" ? "YouTube" : "Файл"}
             </span>
             {summary.author ? <span>{summary.author}</span> : null}
+            {typeof summary.durationSeconds === "number" && summary.durationSeconds >= 45 ? (
+              <span>{pluralMinutes(Math.max(1, Math.round(summary.durationSeconds / 60)))}</span>
+            ) : null}
             {summary.fileName ? (
               <span className="max-w-full truncate">
                 {summary.fileName}

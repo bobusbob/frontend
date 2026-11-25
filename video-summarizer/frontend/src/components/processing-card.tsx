@@ -57,7 +57,7 @@ export function ProcessingCard({
         <div>
           <h2 className="text-lg font-medium tracking-tight text-ink">Готовим выжимку</h2>
           <p className="mt-1 text-sm leading-relaxed text-secondary">
-            Показ сценария. Файл и ссылка не отправляются на сервер.
+            Ролик не сохраняется. Ссылка нужна, чтобы получить транскрипт и выжимку.
           </p>
         </div>
         <button

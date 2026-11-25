@@ -116,7 +116,7 @@ export function InputHub({
           disabled={!canSubmit || busy}
           className="mt-3 flex h-12 w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-accent text-[15px] font-medium text-white transition duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] enabled:hover:-translate-y-px enabled:hover:shadow-[0_10px_30px_-8px_var(--accent-glow)] disabled:cursor-not-allowed disabled:opacity-40"
         >
-          Создать краткое содержание
+          {mode === "file" ? "Расшифровать полностью" : "Создать краткое содержание"}
           <ArrowRight className="size-4" />
         </button>
       </form>
@@ -125,7 +125,9 @@ export function InputHub({
         <span className="hidden md:inline">
           Enter или {shortcut}.{" "}
         </span>
-        Без регистрации. Пока это интерфейс: видео остаётся на устройстве.
+        {mode === "file"
+          ? "Файл обрабатывается на этом компьютере и никуда не отправляется."
+          : "Без регистрации. Ссылка уходит на сервер для расшифровки и не сохраняется."}
       </p>
     </section>
   );

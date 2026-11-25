@@ -12,12 +12,14 @@ import { HowItWorks } from "@/components/how-it-works";
 import { InputHub } from "@/components/input-hub";
 import { ProcessingCard } from "@/components/processing-card";
 import { SummaryView } from "@/components/summary-view";
+import { TranscriptProgress, TranscriptView } from "@/components/transcript-view";
 import { Toast } from "@/components/toast";
 import { cn } from "@/lib/cn";
-import { errorOf } from "@/lib/errors";
+import { errorOf, SummarizeError } from "@/lib/errors";
 import { validateVideoFile } from "@/lib/files";
 import { clearHistory, rememberSummary } from "@/lib/storage";
 import { createSummary } from "@/lib/summarize";
+import { transcribeLocalFile, type TranscriptLine, type TranscriptResult } from "@/lib/transcribe";
 import type { AppError, AppPhase, SourceMode, Summary, YoutubePreview } from "@/lib/types";
 import { useHistory } from "@/lib/use-history";
 import { useSoftTransition } from "@/lib/use-soft-transition";
@@ -34,6 +36,9 @@ export function HomeScreen() {
   const [phase, setPhase] = useState<AppPhase>("idle");
   const [stepIndex, setStepIndex] = useState(0);
   const [summary, setSummary] = useState<Summary | null>(null);
+  const [transcript, setTranscript] = useState<TranscriptResult | null>(null);
+  const [transcriptLines, setTranscriptLines] = useState<TranscriptLine[]>([]);
+  const [transcriptStatus, setTranscriptStatus] = useState("");
   const [blockingError, setBlockingError] = useState<AppError | null>(null);
   const history = useHistory();
   const [toast, setToast] = useState<string | null>(null);
@@ -79,7 +84,7 @@ export function HomeScreen() {
     if (phase === "idle") return;
     if (window.innerWidth >= 768 && phase === "processing") return;
     stageRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-  }, [phase, summary?.id]);
+  }, [phase, summary?.id, transcript?.fileName]);
 
   useEffect(() => {
     submitRef.current = () => {
@@ -133,22 +138,29 @@ export function HomeScreen() {
         setPhase("idle");
         return;
       }
-    } else if (!file) {
+      await submitYoutube();
       return;
     }
 
+    if (!file) return;
+    await submitFile(file);
+  }
+
+  async function submitYoutube() {
     const token = runId.current + 1;
     runId.current = token;
+    setTranscript(null);
+    setTranscriptLines([]);
     setPhase("processing");
     setStepIndex(0);
 
     try {
       const next = await createSummary(
         {
-          mode,
-          youtubeUrl: mode === "youtube" ? url.trim() : undefined,
-          youtube: mode === "youtube" ? preview : null,
-          file: mode === "file" && file ? { name: file.name, size: file.size } : null,
+          mode: "youtube",
+          youtubeUrl: url.trim(),
+          youtube: preview,
+          file: null,
         },
         (index) => {
           if (runId.current === token) setStepIndex(index);
@@ -160,16 +172,66 @@ export function HomeScreen() {
       setSummary(next);
       rememberSummary(next);
       setPhase("result");
-    } catch {
+    } catch (error) {
       if (runId.current !== token) return;
-      setBlockingError(errorOf("network"));
+      if (error instanceof SummarizeError && error.code === "invalid-url") {
+        setUrlError(error.message);
+        setPhase("idle");
+        return;
+      }
+      if (error instanceof SummarizeError) {
+        const known = errorOf(error.code);
+        setBlockingError({
+          code: error.code,
+          title: known.title,
+          message: error.message || known.message,
+        });
+      } else {
+        setBlockingError(errorOf("network"));
+      }
+      setPhase("error");
+    }
+  }
+
+  async function submitFile(selected: File) {
+    const token = runId.current + 1;
+    runId.current = token;
+    setSummary(null);
+    setTranscript(null);
+    setTranscriptLines([]);
+    setTranscriptStatus("Отправляем файл в локальную расшифровку...");
+    setPhase("processing");
+
+    try {
+      const result = await transcribeLocalFile(selected, {
+        onStatus: (message) => {
+          if (runId.current === token) setTranscriptStatus(message);
+        },
+        onLine: (line) => {
+          if (runId.current === token) setTranscriptLines((current) => [...current, line]);
+        },
+        isCancelled: () => runId.current !== token,
+      });
+
+      if (!result || runId.current !== token) return;
+      setTranscript(result);
+      setPhase("result");
+    } catch (error) {
+      if (runId.current !== token) return;
+      const message = error instanceof Error ? error.message : errorOf("network").message;
+      const noSpeech = message.includes("не удалось распознать речь");
+      setBlockingError({
+        code: noSpeech ? "no-speech" : "network",
+        title: noSpeech ? "Речь не найдена" : "Расшифровка не запустилась",
+        message,
+      });
       setPhase("error");
     }
   }
 
   function cancel() {
     runId.current += 1;
-    setPhase(summary ? "result" : "idle");
+    setPhase(summary || transcript ? "result" : "idle");
     setStepIndex(0);
   }
 
@@ -177,6 +239,9 @@ export function HomeScreen() {
     runId.current += 1;
     setPhase("idle");
     setSummary(null);
+    setTranscript(null);
+    setTranscriptLines([]);
+    setTranscriptStatus("");
     setBlockingError(null);
     setUrl("");
     setPreview(null);
@@ -190,6 +255,7 @@ export function HomeScreen() {
 
   function openHistory(item: Summary) {
     runId.current += 1;
+    setTranscript(null);
     setSummary(item);
     setBlockingError(null);
     setPhase("result");
@@ -243,7 +309,22 @@ export function HomeScreen() {
 
         <div ref={stageRef} className="scroll-mt-24">
           <AnimatePresence mode="wait">
-            {phase === "processing" ? (
+            {phase === "processing" && mode === "file" ? (
+              <motion.div
+                key="transcript-progress"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={transition}
+              >
+                <TranscriptProgress
+                  status={transcriptStatus}
+                  lines={transcriptLines}
+                  onCancel={cancel}
+                />
+              </motion.div>
+            ) : null}
+            {phase === "processing" && mode === "youtube" ? (
               <motion.div
                 key="processing"
                 initial={{ opacity: 0, y: 10 }}
@@ -265,7 +346,18 @@ export function HomeScreen() {
                 <ErrorCard error={blockingError} onRetry={() => void submit()} />
               </motion.div>
             ) : null}
-            {phase === "result" && summary ? (
+            {phase === "result" && transcript ? (
+              <motion.div
+                key={transcript.fileName}
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={transition}
+              >
+                <TranscriptView result={transcript} onReset={reset} onToast={showToast} />
+              </motion.div>
+            ) : null}
+            {phase === "result" && summary && !transcript ? (
               <motion.div
                 key={summary.id}
                 initial={{ opacity: 0, y: 12 }}
