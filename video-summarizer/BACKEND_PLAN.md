@@ -50,7 +50,7 @@
 
 ## 2. Куда класть код
 
-Всё остаётся в `video-summarizer/frontend`.
+Всё остаётся в `video-summarizer/convert Video`.
 
 | Файл | Задача |
 |---|---|
@@ -73,7 +73,7 @@ npm install @google/genai
 
 ## 3. Переменные окружения
 
-Файл `video-summarizer/frontend/.env.local`:
+Файл `video-summarizer/convert Video/.env.local`:
 
 ```text
 SUPADATA_API_KEY=

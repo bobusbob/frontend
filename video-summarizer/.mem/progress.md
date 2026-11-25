@@ -17,12 +17,12 @@
 - [x] Локальная расшифровка файла: faster-whisper на 127.0.0.1:8765, полный текст и Word
 
 ## Remaining
-- [ ] Вписать ключи в `frontend/.env.local` и прогнать живой ролик YouTube, когда снимутся лимит Supadata и региональный отказ Gemini
+- [ ] Вписать ключи в `convert Video/.env.local` и прогнать живой ролик YouTube, когда снимутся лимит Supadata и региональный отказ Gemini
 - [ ] Деплой на Vercel
 
 ## Notes
-- Запуск: `cd video-summarizer/frontend && npm run dev`
-- Ключи: `frontend/.env.local` — `SUPADATA_API_KEY`, `GEMINI_API_KEY`. После записи ключей сервер нужно перезапустить
+- Запуск: `cd "video-summarizer/convert Video" && npm run dev`
+- Ключи: `convert Video/.env.local` — `SUPADATA_API_KEY`, `GEMINI_API_KEY`. После записи ключей сервер нужно перезапустить
 - Ссылка YouTube уходит на сервер. Ролик не хранится. Файл с компьютера пока не анализируется
 - В `localStorage` хранятся только три последние карточки
 - Шрифты: Inter и JetBrains Mono, потому что в них есть кириллица

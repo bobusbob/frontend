@@ -8,7 +8,7 @@ Folder: video-summarizer/
 - video-summarizer/BACKEND_PLAN.md — план YouTube: Supadata и Gemini
 - video-summarizer/.mem/progress.md ★
 - video-summarizer/.mem/decisions.md ★
-- video-summarizer/frontend — экран, вкладка «Видео с компьютера» пока без анализа
+- video-summarizer/convert Video — экран, вкладка «Видео с компьютера» пока без анализа
 
 ## Focus
 - Вкладка файла расшифровывает речь локально через faster-whisper
@@ -20,6 +20,6 @@ Folder: video-summarizer/
 
 ## Agent Context
 - transcribe/server.py
-- frontend/src/lib/transcribe.ts
+- convert Video/src/lib/transcribe.ts
 - Модель small, CPU, int8
 - PyAV зафиксирован ниже 15: иначе faster-whisper не открывает файл

@@ -5,7 +5,7 @@
 ## Запуск
 
 ```bash
-cd frontend
+cd "convert Video"
 npm install
 ```
 
