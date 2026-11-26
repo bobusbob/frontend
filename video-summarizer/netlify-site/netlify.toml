@@ -1,0 +1,15 @@
+[build]
+  command = "npm run build"
+
+[build.environment]
+  NODE_VERSION = "22"
+
+[functions]
+  node_bundler = "esbuild"
+  external_node_modules = ["@google/genai"]
+
+[functions."summarize-background"]
+  background = true
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"

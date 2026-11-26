@@ -15,14 +15,15 @@
 - [x] Демо в `createSummary` заменено на чтение этого потока
 
 - [x] Локальная расшифровка файла: faster-whisper на 127.0.0.1:8765, полный текст и Word
+- [x] Отдельная папка `video-summarizer/netlify-site`: только YouTube, Supadata и Gemini через фоновую функцию
 
 ## Remaining
-- [ ] Вписать ключи в `convert Video/.env.local` и прогнать живой ролик YouTube, когда снимутся лимит Supadata и региональный отказ Gemini
-- [ ] Деплой на Vercel
+- [ ] Опубликовать `video-summarizer/netlify-site` сборкой Netlify и задать в сайте `SUPADATA_API_KEY` и `GEMINI_API_KEY`
+- [ ] Прогнать живой ролик уже с сервера Netlify: с этого компьютера Gemini отклоняет регион
 
 ## Notes
-- Запуск: `cd "video-summarizer/convert Video" && npm run dev`
-- Ключи: `convert Video/.env.local` — `SUPADATA_API_KEY`, `GEMINI_API_KEY`. После записи ключей сервер нужно перезапустить
-- Ссылка YouTube уходит на сервер. Ролик не хранится. Файл с компьютера пока не анализируется
+- Публикация: `video-summarizer/netlify-site`. Drop папки не запускает Supadata и Gemini
+- Локальный проект: `cd "video-summarizer/convert Video" && npm run dev`
+- Ключи локально: `convert Video/.env.local` и копия в `netlify-site/.env.local` (файл в gitignore)
 - В `localStorage` хранятся только три последние карточки
 - Шрифты: Inter и JetBrains Mono, потому что в них есть кириллица

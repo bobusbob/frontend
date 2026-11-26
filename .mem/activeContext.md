@@ -1,25 +1,27 @@
 # Active Context
 
 ## Current Task
-Task: План расшифровки файла с компьютера
-Folder: video-summarizer/
+Task: Папка публикации YouTube-сайта на Netlify
+Folder: video-summarizer/netlify-site/
 
 ## Task Files
-- video-summarizer/BACKEND_PLAN.md — план YouTube: Supadata и Gemini
+- video-summarizer/netlify-site/README.md — как публиковать, чтобы заработали оба API
+- video-summarizer/netlify-site/netlify.toml — сборка Next.js и фоновая функция
+- video-summarizer/netlify-site/netlify/functions/summarize-background.ts — Supadata и Gemini
 - video-summarizer/.mem/progress.md ★
 - video-summarizer/.mem/decisions.md ★
-- video-summarizer/convert Video — экран, вкладка «Видео с компьютера» пока без анализа
 
 ## Focus
-- Вкладка файла расшифровывает речь локально через faster-whisper
-- Результат — полный текст и файл Word
-- Сервер расшифровки: `transcribe/start.bat` на порту 8765
+- Папка `video-summarizer/netlify-site` собрана только под ссылку YouTube
+- Длинный запрос идёт фоновой функцией, страница опрашивает статус
+- Ключи задаются в интерфейсе Netlify, в папку их не класть
 
 ## Blockers
-- YouTube по-прежнему упирается в лимит Supadata и региональный отказ Gemini
+- С этого компьютера Gemini отвечает, что регион не поддерживается. Supadata по ссылке отвечает.
+- Netlify Drop не запускает функции: нужна сборка через Git или `netlify deploy --build`
 
 ## Agent Context
-- transcribe/server.py
-- convert Video/src/lib/transcribe.ts
-- Модель small, CPU, int8
-- PyAV зафиксирован ниже 15: иначе faster-whisper не открывает файл
+- Фоновая функция `summarize-background`
+- Хранилище задач: Netlify Blobs `jobs`, локально — память процесса
+- Маршруты `/api/jobs` и `/api/jobs/[id]`
+- Локальный проект `convert Video` и `transcribe` не трогались
